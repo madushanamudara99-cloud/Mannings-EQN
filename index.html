@@ -6,14 +6,12 @@
 <title>Manning's Equation Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=DM+Serif+Display:ital@1&display=swap" rel="stylesheet">
 
-<!-- ── PWA Mobile Optimization Manifest & Device Linking Headers ── -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#162230">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon.png">
 
-<!-- ── Service Worker Operational Bootstrapper ── -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -145,8 +143,6 @@
 
   @media (max-width: 480px) {
     .inputs-grid { grid-template-columns: 1fr !important; }
-    .presets-grid { display: grid !important; grid-template-columns: 1fr; }
-    .preset-tag { text-align: center; white-space: normal !important; }
   }
 
   /* ── Cards ── */
@@ -325,41 +321,6 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300C9A7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
   }
 
-  /* ── n presets ── */
-  .presets-label {
-    font-size: 0.68rem;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
-    margin-top: 0.5rem;
-  }
-
-  .presets-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 1.25rem;
-  }
-
-  .preset-tag {
-    font-size: 0.68rem;
-    font-family: var(--mono);
-    padding: 6px 10px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    color: var(--text2);
-    cursor: pointer;
-    transition: all 0.12s;
-    white-space: nowrap;
-  }
-
-  .preset-tag:hover {
-    border-color: var(--teal-dim);
-    color: var(--teal);
-    background: var(--teal-glow2);
-  }
-
   /* ── Sidebar ── */
   .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
 
@@ -531,7 +492,20 @@
       <div class="inputs-grid">
         <div class="field" id="field-n">
           <label id="lbl-n">Manning's n</label>
-          <input type="number" id="inp-n" value="0.013" step="0.001" min="0.001" oninput="calc()" />
+          <select id="inp-n" onchange="handleNSelectChange()">
+            <option value="0.010">Smooth concrete · 0.010</option>
+            <option value="0.013" selected>Concrete pipe · 0.013</option>
+            <option value="0.015">Brick · 0.015</option>
+            <option value="0.017">Rubble masonry · 0.017</option>
+            <option value="0.022">Earthen ditch · 0.022</option>
+            <option value="0.025">Gravel bed · 0.025</option>
+            <option value="0.030">Natural stream · 0.030</option>
+            <option value="0.040">Weedy channel · 0.040</option>
+            <option value="0.050">Floodplain · 0.050</option>
+            <option value="custom">Custom Material...</option>
+          </select>
+          
+          <input type="number" id="inp-n-custom" value="0.013" step="0.001" min="0.001" style="display: none; margin-top: 8px;" oninput="calc()" />
         </div>
         
         <div class="field" id="field-S">
@@ -559,19 +533,6 @@
           <label id="lbl-QV">Flow rate Q</label>
           <input type="number" id="inp-QV" value="" step="0.01" min="0.0001" oninput="calc()" />
         </div>
-      </div>
-
-      <div class="presets-label">Manning's n — common materials</div>
-      <div class="presets-grid">
-        <span class="preset-tag" onclick="setN(0.010,this)">Smooth concrete · 0.010</span>
-        <span class="preset-tag" onclick="setN(0.013,this)">Concrete pipe · 0.013</span>
-        <span class="preset-tag" onclick="setN(0.015)">Brick · 0.015</span>
-        <span class="preset-tag" onclick="setN(0.017)">Rubble masonry · 0.017</span>
-        <span class="preset-tag" onclick="setN(0.022)">Earthen ditch · 0.022</span>
-        <span class="preset-tag" onclick="setN(0.025)">Gravel bed · 0.025</span>
-        <span class="preset-tag" onclick="setN(0.030)">Natural stream · 0.030</span>
-        <span class="preset-tag" onclick="setN(0.040)">Weedy channel · 0.040</span>
-        <span class="preset-tag" onclick="setN(0.050)">Floodplain · 0.050</span>
       </div>
     </div>
   </div>
@@ -644,8 +605,23 @@ function setShape(s) {
   renderGeom(); drawSection(); calc();
 }
 
-function setN(v) {
-  document.getElementById('inp-n').value = v;
+function getNValue() {
+  const selectEl = document.getElementById('inp-n');
+  const customInpEl = document.getElementById('inp-n-custom');
+  if (selectEl.value === 'custom') {
+    return parseFloat(customInpEl.value) || 0;
+  }
+  return parseFloat(selectEl.value) || 0;
+}
+
+function handleNSelectChange() {
+  const selectEl = document.getElementById('inp-n');
+  const customInpEl = document.getElementById('inp-n-custom');
+  if (selectEl.value === 'custom') {
+    customInpEl.style.display = 'block';
+  } else {
+    customInpEl.style.display = 'none';
+  }
   calc();
 }
 
@@ -669,7 +645,6 @@ function handleSlopeSelectChange() {
   calc();
 }
 
-// Fixed canvas utility logic to accurately process global variable access points safely
 function g(id) {
   const el = document.getElementById('geom-' + id);
   return el ? parseFloat(el.value)||0 : 0;
@@ -697,14 +672,17 @@ function updateLabels() {
   const nDisabled = solveFor === 'n';
   const sDisabled = solveFor === 'S';
   const inpN = document.getElementById('inp-n');
+  const inpNCustom = document.getElementById('inp-n-custom');
   const inpS = document.getElementById('inp-S');
   const inpSCustom = document.getElementById('inp-S-custom');
   
   inpN.disabled = nDisabled;
+  inpNCustom.disabled = nDisabled;
   inpS.disabled = sDisabled;
   inpSCustom.disabled = sDisabled;
   
   inpN.className = nDisabled ? 'computed' : '';
+  inpNCustom.className = nDisabled ? 'computed' : '';
   inpS.className = sDisabled ? 'computed' : '';
   inpSCustom.className = sDisabled ? 'computed' : '';
 
@@ -773,7 +751,7 @@ function calc() {
   let Q, V, n, S, result;
   const kk = k();
 
-  const inpN = parseFloat(document.getElementById('inp-n').value);
+  const inpN = gNValue();
   const inpS = getSlopeValue();
   const inpQV = parseFloat(document.getElementById('inp-QV').value);
 
@@ -785,7 +763,20 @@ function calc() {
     Q=inpQV; S=inpS;
     if (!Q||!S||Q<=0||S<=0) { resVal.textContent='—'; setAux(null); return; }
     V=Q/A; n=(kk*A*Math.pow(R,2/3)*Math.pow(S,0.5))/Q;
-    document.getElementById('inp-n').value = parseFloat(n.toFixed(4)); result=n;
+    
+    let matchedOption = Array.from(document.getElementById('inp-n').options).find(opt => Math.abs(parseFloat(opt.value) - n) < 0.0001);
+    const selectEl = document.getElementById('inp-n');
+    const customInpEl = document.getElementById('inp-n-custom');
+    
+    if (!matchedOption) {
+      selectEl.value = 'custom';
+      customInpEl.style.display = 'block';
+      customInpEl.value = parseFloat(n.toFixed(4));
+    } else {
+      matchedOption.selected = true;
+      customInpEl.style.display = 'none';
+    }
+    result=n;
   } else if (solveFor==='S') {
     Q=inpQV; n=inpN;
     if (!Q||!n||Q<=0||n<=0) { resVal.textContent='—'; setAux(null); return; }
@@ -966,7 +957,7 @@ function dim_arrow(ctx,x1,y1,x2,y2,label,color) {
   ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
   const hw=5,hh=3;
   ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1+hw,y1-hh); ctx.lineTo(x1+hw,y1+hh); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-hw,y2-hh); ctx.lineTo(x2-hw,y2+hh); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-hw,y2-hh); stroke(); ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-hw,y2-hh); ctx.lineTo(x2-hw,y2+hh); ctx.closePath(); ctx.fill();
   ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='center';
   ctx.fillText(label,(x1+x2)/2,y1-6);
 }
@@ -986,6 +977,16 @@ function dim_arrow_v(ctx,x,y1,y2,label,color) {
     ctx.fillText(label, 0, 0);
     ctx.restore();
   }
+}
+
+// Fixed function binding mapping configuration hooks
+function gNValue() {
+  const selectEl = document.getElementById('inp-n');
+  const customInpEl = document.getElementById('inp-n-custom');
+  if (selectEl.value === 'custom') {
+    return parseFloat(customInpEl.value) || 0;
+  }
+  return parseFloat(selectEl.value) || 0;
 }
 
 renderGeom(); drawSection(); updateLabels(); calc();
