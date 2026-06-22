@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manning's Equation Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=DM+Serif+Display:ital@1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0F1923;
+    --navy2: #162230;
+    --navy3: #1E2E3D;
+    --navy4: #243447;
+    --teal: #00C9A7;
+    --teal-dim: #009E85;
+    --teal-glow: rgba(0,201,167,0.12);
+    --teal-glow2: rgba(0,201,167,0.06);
+    --amber: #F5A623;
+    --red: #FF6B6B;
+    --text: #E8EEF4;
+    --text2: #8FA3B8;
+    --text3: #4A6070;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --border-teal: rgba(0,201,167,0.3);
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --serif: 'DM Serif Display', serif;
+  }
+
+  html { font-size: 15px; }
+  body {
+    font-family: var(--sans);
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: rgba(15,25,35,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--teal-glow);
+    border: 1px solid var(--border-teal);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; }
+
+  .logo-text {
+    font-size: 0.8rem;
+    color: var(--text2);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .logo-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.25rem;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .formula-badge {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--teal);
+    background: var(--teal-glow2);
+    border: 1px solid var(--border-teal);
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+  }
+
+  /* Side-by-Side Geometry Layout Panel */
+  .flex-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 820px) {
+    main { grid-template-columns: 1fr; padding: 1rem 1rem 3rem; }
+    header { padding: 1rem; }
+    .formula-badge { display: none; }
+    .tab-row { grid-template-columns: repeat(2, 1fr) !important; }
+    .shape-row { display: grid !important; grid-template-columns: repeat(2, 1fr); }
+    .shape-btn { text-align: center; }
+    .flex-panel { grid-template-columns: 1fr; gap: 1.25rem; }
+  }
+
+  @media (max-width: 480px) {
+    .inputs-grid { grid-template-columns: 1fr !important; }
+    .presets-grid { display: grid !important; grid-template-columns: 1fr; }
+    .preset-tag { text-align: center; white-space: normal !important; }
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── Solve-for tabs ── */
+  .tab-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 1.5rem;
+  }
+
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 10px 4px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .tab-btn:hover { border-color: var(--border2); color: var(--text); }
+
+  .tab-btn.active {
+    background: var(--teal-glow);
+    border-color: var(--border-teal);
+    color: var(--teal);
+    font-weight: 500;
+  }
+
+  /* ── Shape selector ── */
+  .shape-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .shape-btn {
+    font-size: 0.72rem;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--sans);
+    font-weight: 400;
+  }
+
+  .shape-btn:hover { border-color: var(--border2); color: var(--text); }
+
+  .shape-btn.active {
+    background: var(--teal-glow);
+    border-color: var(--border-teal);
+    color: var(--teal);
+  }
+
+  /* ── Unit toggle ── */
+  .unit-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    width: fit-content;
+    margin-bottom: 1.5rem;
+  }
+
+  .unit-btn {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .unit-btn.active {
+    background: var(--navy4);
+    color: var(--teal);
+  }
+
+  /* ── Input grid ── */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .vertical-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 0.7rem;
+    color: var(--text2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .field input, .field select {
+    background: var(--navy3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238FA3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--border-teal);
+    box-shadow: 0 0 0 3px var(--teal-glow2);
+  }
+
+  .field input:disabled, .field select:disabled {
+    color: var(--text3);
+    background-image: none;
+    background: rgba(255,255,255,0.02);
+    cursor: not-allowed;
+  }
+
+  .field select.computed, .field input.computed {
+    color: var(--teal);
+    border-color: var(--border-teal);
+    background-color: var(--teal-glow2);
+  }
+
+  .field select.computed {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300C9A7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  }
+
+  /* ── n presets ── */
+  .presets-label {
+    font-size: 0.68rem;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    margin-top: 0.5rem;
+  }
+
+  .presets-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+  }
+
+  .preset-tag {
+    font-size: 0.68rem;
+    font-family: var(--mono);
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+
+  .preset-tag:hover {
+    border-color: var(--teal-dim);
+    color: var(--teal);
+    background: var(--teal-glow2);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* ── Section diagram canvas ── */
+  #section-canvas {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 10px;
+    background: var(--navy);
+    border: 1px solid var(--border);
+    display: block;
+  }
+
+  /* ── Result display ── */
+  .result-block {
+    background: linear-gradient(135deg, rgba(0,201,167,0.08) 0%, rgba(0,201,167,0.03) 100%);
+    border: 1px solid var(--border-teal);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .result-eyebrow {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--teal-dim);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .result-value {
+    font-family: var(--mono);
+    font-size: 2.2rem;
+    font-weight: 500;
+    color: var(--teal);
+    line-height: 1;
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+
+  .result-unit {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text2);
+  }
+
+  /* ── Auxiliary metrics ── */
+  .aux-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .aux-item {
+    background: var(--navy3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .aux-val {
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .aux-label {
+    font-size: 0.65rem;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  /* ── Froude badge ── */
+  .froude-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin-top: 8px;
+    border: 1px solid transparent;
+    max-width: 100%;
+  }
+
+  .froude-sub { background: rgba(0,201,167,0.1); color: var(--teal); border-color: var(--border-teal); }
+  .froude-crit { background: rgba(245,166,35,0.1); color: var(--amber); border-color: rgba(245,166,35,0.3); }
+  .froude-sup { background: rgba(255,107,107,0.1); color: var(--red); border-color: rgba(255,107,107,0.3); }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  /* ── Footer note ── */
+  .footnote {
+    font-size: 0.68rem;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 3rem;
+    font-family: var(--mono);
+    padding: 0 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 13 C4 9 7 7 9 9 C11 11 14 9 16 5" stroke="#00C9A7" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M2 16 L16 16" stroke="#4A6070" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Open Channel Hydraulics</div>
+      <div class="logo-title">Manning's Calculator</div>
+    </div>
+  </div>
+  <div class="formula-badge">Q = (1/n) · A · R²/³ · S¹/²</div>
+</header>
+
+<main>
+  <div>
+    <div class="card">
+      <div class="card-title">Configuration</div>
+
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="btn-si" onclick="setUnits('SI')">SI — metres</button>
+        <button class="unit-btn" id="btn-us" onclick="setUnits('US')">US — feet</button>
+      </div>
+
+      <div class="card-title">Solve for</div>
+      <div class="tab-row" id="solve-tabs">
+        <button class="tab-btn active" onclick="setSolve('Q')">Q<br><span style="font-size:0.65rem;color:var(--text3)">flow rate</span></button>
+        <button class="tab-btn" onclick="setSolve('V')">V<br><span style="font-size:0.65rem;color:var(--text3)">velocity</span></button>
+        <button class="tab-btn" onclick="setSolve('n')">n<br><span style="font-size:0.65rem;color:var(--text3)">roughness</span></button>
+        <button class="tab-btn" onclick="setSolve('S')">S<br><span style="font-size:0.65rem;color:var(--text3)">slope</span></button>
+      </div>
+
+      <div class="card-title">Channel cross-section</div>
+      <div class="shape-row" id="shape-btns">
+        <button class="shape-btn active" onclick="setShape('rect')">Rectangular</button>
+        <button class="shape-btn" onclick="setShape('trap')">Trapezoidal</button>
+        <button class="shape-btn" onclick="setShape('circ')">Circular</button>
+        <button class="shape-btn" onclick="setShape('tri')">Triangular</button>
+        <button class="shape-btn" onclick="setShape('para')">Parabolic</button>
+      </div>
+
+      <hr class="divider">
+
+      <div class="flex-panel">
+        <div>
+          <div class="card-title" id="geom-title">Geometry Parameters</div>
+          <div class="vertical-stack" id="geom-inputs"></div>
+        </div>
+        <div>
+          <div class="card-title">Dynamic Cross-Section</div>
+          <canvas id="section-canvas" width="600" height="450"></canvas>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="card-title">Flow parameters</div>
+      <div class="inputs-grid">
+        <div class="field" id="field-n">
+          <label id="lbl-n">Manning's n</label>
+          <input type="number" id="inp-n" value="0.013" step="0.001" min="0.001" oninput="calc()" />
+        </div>
+        
+        <div class="field" id="field-S">
+          <label id="lbl-S">Slope S</label>
+          <select id="inp-S" onchange="handleSlopeSelectChange()">
+            <option value="0.02">1:50 (0.02000)</option>
+            <option value="0.01">1:100 (0.01000)</option>
+            <option value="0.005">1:200 (0.00500)</option>
+            <option value="0.004">1:250 (0.00400)</option>
+            <option value="0.003333">1:300 (0.00333)</option>
+            <option value="0.0025">1:400 (0.00250)</option>
+            <option value="0.002" selected>1:500 (0.00200)</option>
+            <option value="0.001667">1:600 (0.00167)</option>
+            <option value="0.00125">1:800 (0.00125)</option>
+            <option value="0.001">1:1000 (0.00100)</option>
+            <option value="0.000667">1:1500 (0.00067)</option>
+            <option value="0.0005">1:2000 (0.00050)</option>
+            <option value="custom">Custom Slope...</option>
+          </select>
+          
+          <input type="number" id="inp-S-custom" value="0.002" step="0.00001" min="0.0000001" style="display: none; margin-top: 8px;" oninput="calc()" />
+        </div>
+
+        <div class="field" id="field-QV" style="grid-column: 1 / -1; display:none;">
+          <label id="lbl-QV">Flow rate Q</label>
+          <input type="number" id="inp-QV" value="" step="0.01" min="0.0001" oninput="calc()" />
+        </div>
+      </div>
+
+      <div class="presets-label">Manning's n — common materials</div>
+      <div class="presets-grid">
+        <span class="preset-tag" onclick="setN(0.010,this)">Smooth concrete · 0.010</span>
+        <span class="preset-tag" onclick="setN(0.013,this)">Concrete pipe · 0.013</span>
+        <span class="preset-tag" onclick="setN(0.015)">Brick · 0.015</span>
+        <span class="preset-tag" onclick="setN(0.017)">Rubble masonry · 0.017</span>
+        <span class="preset-tag" onclick="setN(0.022)">Earthen ditch · 0.022</span>
+        <span class="preset-tag" onclick="setN(0.025)">Gravel bed · 0.025</span>
+        <span class="preset-tag" onclick="setN(0.030)">Natural stream · 0.030</span>
+        <span class="preset-tag" onclick="setN(0.040)">Weedy channel · 0.040</span>
+        <span class="preset-tag" onclick="setN(0.050)">Floodplain · 0.050</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="card" id="result-card">
+      <div class="card-title">Result Summary</div>
+      <div id="result-area">
+        <div class="result-block">
+          <div class="result-eyebrow">Flow rate Q</div>
+          <div class="result-value" id="res-val">—</div>
+          <div class="result-unit" id="res-unit">m³/s</div>
+          <div id="froude-badge"></div>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="card-title">Hydraulic properties</div>
+      <div class="aux-grid" id="aux-grid">
+        <div class="aux-item"><div class="aux-val" id="aux-A">—</div><div class="aux-label">Area (m²)</div></div>
+        <div class="aux-item"><div class="aux-val" id="aux-R">—</div><div class="aux-label">Hydraulic radius (m)</div></div>
+        <div class="aux-item"><div class="aux-val" id="aux-V">—</div><div class="aux-label">Velocity (m/s)</div></div>
+        <div class="aux-item"><div class="aux-val" id="aux-T">—</div><div class="aux-label">Top width (m)</div></div>
+        <div class="aux-item"><div class="aux-val" id="aux-D">—</div><div class="aux-label">Hyd. depth (m)</div></div>
+        <div class="aux-item"><div class="aux-val" id="aux-Fr">—</div><div class="aux-label">Froude No.</div></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="footnote">Manning's equation · Q = (k/n)·A·R^(2/3)·S^(1/2) · k=1.0 SI / 1.486 US customary</div>
+
+<script>
+let solveFor = 'Q', shape = 'rect', units = 'SI';
+
+const shapes = {
+  rect: { label: 'Rectangular', fields: [['B','Bottom width'],['y','Flow depth']] },
+  trap: { label: 'Trapezoidal', fields: [['B','Bottom width'],['y','Flow depth'],['z','Side slope z (H:V)']] },
+  circ: { label: 'Circular (partial)', fields: [['D','Diameter'],['y','Flow depth']] },
+  tri:  { label: 'Triangular', fields: [['z','Side slope z (H:V)'],['y','Flow depth']] },
+  para: { label: 'Parabolic', fields: [['T','Top width'],['y','Flow depth']] }
+};
+
+const defaults = { B:0.6, y:0.6, z:1.5, D:1.0, T:2.0 };
+
+function L() { return units==='SI' ? 'm' : 'ft'; }
+function Q_u() { return units==='SI' ? 'm³/s' : 'ft³/s'; }
+function V_u() { return units==='SI' ? 'm/s' : 'ft/s'; }
+function k() { return units==='SI' ? 1.0 : 1.486; }
+
+function setUnits(u) {
+  units = u;
+  document.getElementById('btn-si').className = 'unit-btn' + (u==='SI'?' active':'');
+  document.getElementById('btn-us').className = 'unit-btn' + (u==='US'?' active':'');
+  renderGeom(); updateLabels(); calc();
+}
+
+function setSolve(v) {
+  solveFor = v;
+  document.querySelectorAll('#solve-tabs .tab-btn').forEach((b,i) => {
+    b.className = 'tab-btn' + (['Q','V','n','S'][i]===v ? ' active' : '');
+  });
+  updateLabels(); calc();
+}
+
+function setShape(s) {
+  shape = s;
+  document.querySelectorAll('#shape-btns .shape-btn').forEach((b,i) => {
+    b.className = 'shape-btn' + (['rect','trap','circ','tri','para'][i]===s ? ' active' : '');
+  });
+  renderGeom(); drawSection(); calc();
+}
+
+function setN(v) {
+  document.getElementById('inp-n').value = v;
+  calc();
+}
+
+function getSlopeValue() {
+  const selectEl = document.getElementById('inp-S');
+  const customInpEl = document.getElementById('inp-S-custom');
+  if (selectEl.value === 'custom') {
+    return parseFloat(customInpEl.value) || 0;
+  }
+  return parseFloat(selectEl.value) || 0;
+}
+
+function handleSlopeSelectChange() {
+  const selectEl = document.getElementById('inp-S');
+  const customInpEl = document.getElementById('inp-S-custom');
+  if (selectEl.value === 'custom') {
+    customInpEl.style.display = 'block';
+  } else {
+    customInpEl.style.display = 'none';
+  }
+  calc();
+}
+
+function g(id) {
+  const el = document.getElementById('geom-' + id);
+  return el ? parseFloat(el.value)||0 : 0;
+}
+
+function renderGeom() {
+  const container = document.getElementById('geom-inputs');
+  const sh = shapes[shape];
+  let html = '';
+  sh.fields.forEach(([id, lbl]) => {
+    const unit = id==='z' ? 'H:V' : L();
+    const def = defaults[id] || 1.0;
+    html += `<div class="field"><label>${lbl} (${unit})</label><input type="number" id="geom-${id}" value="${def}" step="0.01" min="0.001" oninput="drawSection();calc()"></div>`;
+  });
+  container.innerHTML = html;
+  updateLabels();
+}
+
+function updateLabels() {
+  const needQ = solveFor === 'n' || solveFor === 'S';
+  const fQV = document.getElementById('field-QV');
+  fQV.style.display = needQ ? 'flex' : 'none';
+  document.getElementById('lbl-QV').textContent = 'Flow rate Q (' + Q_u() + ')';
+
+  const nDisabled = solveFor === 'n';
+  const sDisabled = solveFor === 'S';
+  const inpN = document.getElementById('inp-n');
+  const inpS = document.getElementById('inp-S');
+  const inpSCustom = document.getElementById('inp-S-custom');
+  
+  inpN.disabled = nDisabled;
+  inpS.disabled = sDisabled;
+  inpSCustom.disabled = sDisabled;
+  
+  inpN.className = nDisabled ? 'computed' : '';
+  inpS.className = sDisabled ? 'computed' : '';
+  inpSCustom.className = sDisabled ? 'computed' : '';
+
+  document.getElementById('lbl-S').textContent = 'Slope S (' + L() + '/' + L() + ')';
+
+  const labels = { Q:'Flow rate Q', V:'Velocity V', n:"Manning's n", S:'Slope S' };
+  const units2 = { Q:Q_u(), V:V_u(), n:'', S:L()+'/'+L() };
+  document.querySelector('#result-area .result-eyebrow').textContent = labels[solveFor];
+  document.getElementById('res-unit').textContent = units2[solveFor];
+
+  document.querySelectorAll('#aux-grid .aux-item')[0].querySelector('.aux-label').textContent = `Flow area (${L()}²)`;
+  document.querySelectorAll('#aux-grid .aux-item')[1].querySelector('.aux-label').textContent = `Hydraulic radius (${L()})`;
+  document.querySelectorAll('#aux-grid .aux-item')[2].querySelector('.aux-label').textContent = `Velocity (${V_u()})`;
+  document.querySelectorAll('#aux-grid .aux-item')[3].querySelector('.aux-label').textContent = `Top width (${L()})`;
+  document.querySelectorAll('#aux-grid .aux-item')[4].querySelector('.aux-label').textContent = `Hyd. depth (${L()})`;
+}
+
+function hydraulics() {
+  let A, P, T, Dh;
+  if (shape==='rect') {
+    const B=g('B'), y=g('y');
+    if (!B||!y) return null;
+    A=B*y; P=B+2*y; T=B; Dh=A/T;
+  } else if (shape==='trap') {
+    const B=g('B'), y=g('y'), z=g('z');
+    if (!y) return null;
+    A=(B+z*y)*y; P=B+2*y*Math.sqrt(1+z*z); T=B+2*z*y; Dh=A/T;
+  } else if (shape==='circ') {
+    const D=g('D'), y=g('y');
+    if (!D||!y||y>D) return null;
+    const r=D/2;
+    const theta = 2*Math.acos(Math.max(-1,Math.min(1,(r-y)/r)));
+    A=r*r*(theta-Math.sin(theta))/2;
+    P=r*theta; T=2*Math.sqrt(Math.max(0,y*(D-y))); Dh=A/T;
+  } else if (shape==='tri') {
+    const z=g('z'), y=g('y');
+    if (!y) return null;
+    A=z*y*y; P=2*y*Math.sqrt(1+z*z); T=2*z*y; Dh=A/T;
+  } else if (shape==='para') {
+    const Tw=g('T'), y=g('y');
+    if (!Tw||!y) return null;
+    A=(2/3)*Tw*y; T=Tw;
+    const c=2*Tw/(4*y);
+    const sq=Math.sqrt(1+c*c);
+    P=(Tw/2)*sq + (y/c)*Math.log(c+sq);
+    if(!isFinite(P)) P=Tw+8*y*y/(3*Tw);
+    Dh=A/T;
+  }
+  const R=A/P;
+  return {A,P,T,R,Dh};
+}
+
+function fmt(v, d=3) {
+  if (v===null||isNaN(v)||!isFinite(v)) return '—';
+  if (Math.abs(v)<0.0001||Math.abs(v)>99999) return v.toExponential(3);
+  return parseFloat(v.toFixed(d)).toString();
+}
+
+function calc() {
+  const h = hydraulics();
+  const resVal = document.getElementById('res-val');
+  if (!h) { resVal.textContent = 'error'; resVal.style.color = 'var(--red)'; return; }
+  resVal.style.color = 'var(--teal)';
+
+  const {A,P,T,R,Dh} = h;
+  let Q, V, n, S, result;
+  const kk = k();
+
+  const inpN = parseFloat(document.getElementById('inp-n').value);
+  const inpS = getSlopeValue();
+  const inpQV = parseFloat(document.getElementById('inp-QV').value);
+
+  if (solveFor==='Q'||solveFor==='V') {
+    n=inpN; S=inpS;
+    if (!n||!S||n<=0||S<=0) { resVal.textContent='—'; setAux(null); return; }
+    V=(kk/n)*Math.pow(R,2/3)*Math.pow(S,0.5); Q=V*A; result = solveFor==='Q' ? Q : V;
+  } else if (solveFor==='n') {
+    Q=inpQV; S=inpS;
+    if (!Q||!S||Q<=0||S<=0) { resVal.textContent='—'; setAux(null); return; }
+    V=Q/A; n=(kk*A*Math.pow(R,2/3)*Math.pow(S,0.5))/Q;
+    document.getElementById('inp-n').value = parseFloat(n.toFixed(4)); result=n;
+  } else if (solveFor==='S') {
+    Q=inpQV; n=inpN;
+    if (!Q||!n||Q<=0||n<=0) { resVal.textContent='—'; setAux(null); return; }
+    V=Q/A; S=Math.pow((Q*n)/(kk*A*Math.pow(R,2/3)),2);
+    
+    // Check if matching calculated slope exists in predefined ratios
+    let matchedOption = Array.from(document.getElementById('inp-S').options).find(opt => Math.abs(parseFloat(opt.value) - S) < 0.00001);
+    const selectEl = document.getElementById('inp-S');
+    const customInpEl = document.getElementById('inp-S-custom');
+    
+    if (!matchedOption) {
+      selectEl.value = 'custom';
+      customInpEl.style.display = 'block';
+      customInpEl.value = parseFloat(S.toFixed(7));
+    } else {
+      matchedOption.selected = true;
+      customInpEl.style.display = 'none';
+    }
+    result=S;
+  }
+
+  resVal.textContent = fmt(result);
+  const Fr = V / Math.sqrt(9.81 * Dh);
+  setAux({A,R,V,T,Dh,Fr});
+}
+
+function setAux(d) {
+  if (!d) { ['aux-A','aux-R','aux-V','aux-T','aux-D','aux-Fr'].forEach(id => document.getElementById(id).textContent='—'); document.getElementById('froude-badge').innerHTML=''; return; }
+  document.getElementById('aux-A').textContent = fmt(d.A);
+  document.getElementById('aux-R').textContent = fmt(d.R);
+  document.getElementById('aux-V').textContent = fmt(d.V);
+  document.getElementById('aux-T').textContent = fmt(d.T);
+  document.getElementById('aux-D').textContent = fmt(d.Dh);
+  document.getElementById('aux-Fr').textContent = fmt(d.Fr,3);
+
+  let frClass, frLabel;
+  if (d.Fr < 0.9) { frClass='froude-sub'; frLabel='Subcritical flow (Fr < 1)'; }
+  else if (d.Fr < 1.1) { frClass='froude-crit'; frLabel='Near-critical flow (Fr ≈ 1)'; }
+  else { frClass='froude-sup'; frLabel='Supercritical flow (Fr > 1)'; }
+  document.getElementById('froude-badge').innerHTML = `<span class="froude-badge ${frClass}">● ${frLabel}</span>`;
+}
+
+function drawSection() {
+  const canvas = document.getElementById('section-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const mx=65, my=65, cw=W-2*mx, ch=H-2*my;
+  const teal='#00C9A7', dim='#4A6070', water='rgba(0,180,150,0.15)', waterStroke='rgba(0,201,167,0.5)';
+  const channelStroke='#8FA3B8';
+
+  ctx.font = '11px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+
+  if (shape==='rect') {
+    const B=g('B')||0.6, y=g('y')||0.6;
+    const maxDimension = Math.max(B, y);
+    const scale = Math.min(cw / maxDimension, ch / maxDimension) * 0.85;
+    
+    const bw=B*scale, bh=y*scale;
+    const x0=(W-bw)/2, y0=H-my-bh;
+
+    ctx.fillStyle=water;
+    ctx.fillRect(x0,y0,bw,bh);
+    ctx.strokeStyle=waterStroke; ctx.lineWidth=1;
+    ctx.strokeRect(x0,y0,bw,bh);
+
+    ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
+    ctx.beginPath(); 
+    ctx.moveTo(x0, y0 - 30); 
+    ctx.lineTo(x0, y0 + bh); 
+    ctx.lineTo(x0 + bw, y0 + bh); 
+    ctx.lineTo(x0 + bw, y0 - 30); 
+    ctx.stroke();
+
+    dim_arrow(ctx,x0,H-my+20,x0+bw,H-my+20,`B = ${fmt(B,2)} ${L()}`,teal);
+    dim_arrow_v(ctx,x0-20,y0,y0+bh,`y = ${fmt(y,2)} ${L()}`,teal);
+
+  } else if (shape==='trap') {
+    const B=g('B')||1, y=g('y')||0.5, z=g('z')||1.5;
+    const tw=B+2*z*y;
+    const scale = Math.min(cw/tw*0.8, ch/y*0.8, 120);
+    const bw=B*scale, bh=y*scale, off=z*y*scale;
+    const totalW=(B+2*z*y)*scale;
+    const x0=(W-totalW)/2, by=H-my-bh;
+
+    ctx.fillStyle=water; ctx.beginPath();
+    ctx.moveTo(x0,by); ctx.lineTo(x0+off,by+bh); ctx.lineTo(x0+off+bw,by+bh); ctx.lineTo(x0+totalW,by); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; ctx.stroke();
+
+    ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x0-15,by-20); ctx.lineTo(x0,by); ctx.lineTo(x0+off,by+bh); ctx.lineTo(x0+off+bw,by+bh); ctx.lineTo(x0+totalW,by); ctx.lineTo(x0+totalW+15,by-20); ctx.stroke();
+
+    dim_arrow(ctx,x0+off,H-my+20,x0+off+bw,H-my+20,`B = ${fmt(B,2)} ${L()}`,teal);
+    dim_arrow(ctx,x0,by-20,x0+totalW,by-20,`T = ${fmt(tw,2)} ${L()}`,dim);
+    dim_arrow_v(ctx,x0-20,by,by+bh,`y = ${fmt(y,2)} ${L()}`,teal);
+
+  } else if (shape==='circ') {
+    const D=g('D')||1, y=g('y')||0.5;
+    const r=D/2;
+    const scale = Math.min(cw/D*0.7, ch/D*0.7, 140);
+    const cx2=W/2, cy2=H/2;
+    const rs=r*scale;
+
+    ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx2,cy2,rs,0,Math.PI*2); ctx.stroke();
+
+    const yRatio=Math.max(0.01,Math.min(0.99,y/D));
+    const theta=2*Math.acos(1-2*yRatio);
+
+    ctx.fillStyle=water; ctx.beginPath();
+    ctx.arc(cx2,cy2,rs,Math.PI/2+theta/2,Math.PI/2-theta/2,true);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; ctx.stroke();
+
+    ctx.strokeStyle=dim; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(cx2-rs-10,cy2); ctx.lineTo(cx2+rs+10,cy2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle=teal; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx2,cy2); ctx.lineTo(cx2,cy2-rs); ctx.stroke();
+    ctx.fillStyle=teal; ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='left';
+    ctx.fillText(`D = ${fmt(D,2)} ${L()}`, cx2+6, cy2-rs/2);
+    ctx.textAlign='center';
+
+    dim_arrow_v(ctx,cx2+rs+15,cy2+rs-y*scale,cy2+rs,`y`,teal);
+    ctx.fillStyle=teal; ctx.fillText(`y = ${fmt(y,2)} ${L()}`, cx2+rs+45, cy2+rs-(y*scale)/2+4);
+
+  } else if (shape==='tri') {
+    const z=g('z')||1.5, y=g('y')||0.5;
+    const hw=z*y;
+    const scale=Math.min(cw/hw/2*0.7, ch/y*0.8, 140);
+    const bh=y*scale, totalW=2*hw*scale;
+    const cx2=W/2, tipY=H-my;
+
+    ctx.fillStyle=water; ctx.beginPath();
+    ctx.moveTo(cx2,tipY); ctx.lineTo(cx2-totalW/2,tipY-bh); ctx.lineTo(cx2+totalW/2,tipY-bh); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; ctx.stroke();
+
+    ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cx2-totalW/2-15,tipY-bh-20); ctx.lineTo(cx2-totalW/2,tipY-bh); ctx.lineTo(cx2,tipY); ctx.lineTo(cx2+totalW/2,tipY-bh); ctx.lineTo(cx2+totalW/2+15,tipY-bh-20); ctx.stroke();
+
+    dim_arrow(ctx,cx2-totalW/2,tipY-bh-20,cx2+totalW/2,tipY-bh-20,`T = ${fmt(2*hw,2)} ${L()}`,teal);
+    dim_arrow_v(ctx,cx2+totalW/2+20,tipY-bh,tipY,`y = ${fmt(y,2)} ${L()}`,teal);
+    ctx.fillStyle=dim; ctx.fillText(`z = ${fmt(z,2)}`, cx2+totalW/4, tipY-bh/2);
+
+  } else if (shape==='para') {
+    const Tw=g('T')||2, y=g('y')||0.5;
+    const scale=Math.min(cw/Tw*0.8, ch/y*0.8, 140);
+    const bh=y*scale, bw=Tw*scale;
+    const cx2=W/2, baseY=H-my;
+
+    ctx.fillStyle=water; ctx.beginPath();
+    ctx.moveTo(cx2-bw/2,baseY-bh);
+    for(let i=0;i<=40;i++) { const t=(i/20-1); ctx.lineTo(cx2+t*bw/2, baseY-(1-t*t)*bh); }
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; ctx.stroke();
+
+    ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=0;i<=40;i++) { const t=(i/20-1); if(i===0) ctx.moveTo(cx2+t*bw/2,baseY-bh-20); else ctx.lineTo(cx2+t*bw/2,baseY-(1-t*t)*bh); }
+    ctx.lineTo(cx2+bw/2+10,baseY-bh-20);
+    ctx.stroke();
+
+    dim_arrow(ctx,cx2-bw/2,baseY-bh-20,cx2+bw/2,baseY-bh-20,`T = ${fmt(Tw,2)} ${L()}`,teal);
+    dim_arrow_v(ctx,cx2+bw/2+15,baseY-bh,baseY,`y = ${fmt(y,2)} ${L()}`,teal);
+  }
+
+  ctx.font='10px JetBrains Mono, monospace';
+  ctx.fillStyle='rgba(0,201,167,0.6)';
+  ctx.textAlign='right';
+  ctx.fillText('water surface ~~~',W-20,30);
+  ctx.textAlign='center';
+}
+
+function dim_arrow(ctx,x1,y1,x2,y2,label,color) {
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const hw=5,hh=3;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1+hw,y1-hh); ctx.lineTo(x1+hw,y1+hh); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-hw,y2-hh); ctx.lineTo(x2-hw,y2+hh); ctx.closePath(); ctx.fill();
+  ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='center';
+  ctx.fillText(label,(x1+x2)/2,y1-6);
+}
+
+function dim_arrow_v(ctx,x,y1,y2,label,color) {
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x,y2); ctx.stroke();
+  const hw=3,hh=5;
+  ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x-hw,y1+hh); ctx.lineTo(x+hw,y1+hh); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x,y2); ctx.lineTo(x-hw,y2-hh); ctx.lineTo(x+hw,y2-hh); ctx.closePath(); ctx.fill();
+  
+  if(label) {
+    ctx.save();
+    ctx.translate(x-8, (y1+y2)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.font='11px JetBrains Mono, monospace';
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  }
+}
+
+renderGeom(); drawSection(); updateLabels(); calc();
+</script>
+</body>
+</html>
