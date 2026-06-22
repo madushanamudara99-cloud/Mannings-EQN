@@ -1,0 +1,18 @@
+{
+  "name": "Manning's Drainage Calculator",
+  "short_name": "Manning Calc",
+  "description": "Open channel hydraulics calculator for field drainage design.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0F1923",
+  "theme_color": "#162230",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
