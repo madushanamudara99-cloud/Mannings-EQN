@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mannings-cache-v1';
+const CACHE_NAME = 'mannings-cache-v2';
 const ASSETS = [
   'index.html',
   'manifest.json',
