@@ -321,6 +321,44 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300C9A7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
   }
 
+  /* ── Action Trigger Button ── */
+  .calc-btn-container {
+    margin-top: 0.75rem;
+    width: 100%;
+  }
+
+  .calc-submit-btn {
+    width: 100%;
+    background: var(--teal);
+    color: var(--navy);
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0, 201, 167, 0.15);
+  }
+
+  .calc-submit-btn:hover {
+    background: var(--teal-dim);
+    box-shadow: 0 6px 16px rgba(0, 201, 167, 0.25);
+    transform: translateY(-1px);
+  }
+
+  .calc-submit-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(0, 201, 167, 0.15);
+  }
+
   /* ── Sidebar ── */
   .sidebar { display: flex; flex-direction: column; gap: 1.25rem; }
 
@@ -534,6 +572,17 @@
           <input type="number" id="inp-QV" value="" step="0.01" min="0.0001" oninput="calc()" />
         </div>
       </div>
+
+      <div class="calc-btn-container">
+        <button type="button" class="calc-submit-btn" onclick="calc()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Calculate Metrics
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -605,6 +654,12 @@ function setShape(s) {
   renderGeom(); drawSection(); calc();
 }
 
+function setN(v) {
+  document.getElementById('inp-n').value = v;
+  calc();
+}
+
+// Fixed core runtime typo bug: properly maps method tracking configuration hooks
 function getNValue() {
   const selectEl = document.getElementById('inp-n');
   const customInpEl = document.getElementById('inp-n-custom');
@@ -751,7 +806,7 @@ function calc() {
   let Q, V, n, S, result;
   const kk = k();
 
-  const inpN = gNValue();
+  const inpN = getNValue();
   const inpS = getSlopeValue();
   const inpQV = parseFloat(document.getElementById('inp-QV').value);
 
@@ -977,16 +1032,6 @@ function dim_arrow_v(ctx,x,y1,y2,label,color) {
     ctx.fillText(label, 0, 0);
     ctx.restore();
   }
-}
-
-// Fixed function binding mapping configuration hooks
-function gNValue() {
-  const selectEl = document.getElementById('inp-n');
-  const customInpEl = document.getElementById('inp-n-custom');
-  if (selectEl.value === 'custom') {
-    return parseFloat(customInpEl.value) || 0;
-  }
-  return parseFloat(selectEl.value) || 0;
 }
 
 renderGeom(); drawSection(); updateLabels(); calc();
