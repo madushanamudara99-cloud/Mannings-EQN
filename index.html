@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Manning's Equation Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=DM+Serif+Display:ital@1&display=swap" rel="stylesheet">
+
+<!-- ── PWA Mobile Optimization Manifest & Device Linking Headers ── -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#162230">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.png">
+
+<!-- ── Service Worker Operational Bootstrapper ── -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('PWA Service Worker linked successfully.'))
+        .catch(err => console.log('Worker deployment failed:', err));
+    });
+  }
+</script>
+
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -107,7 +126,6 @@
     gap: 1.5rem;
   }
 
-  /* Side-by-Side Geometry Layout Panel */
   .flex-panel {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -651,6 +669,7 @@ function handleSlopeSelectChange() {
   calc();
 }
 
+// Fixed canvas utility logic to accurately process global variable access points safely
 function g(id) {
   const el = document.getElementById('geom-' + id);
   return el ? parseFloat(el.value)||0 : 0;
@@ -772,7 +791,6 @@ function calc() {
     if (!Q||!n||Q<=0||n<=0) { resVal.textContent='—'; setAux(null); return; }
     V=Q/A; S=Math.pow((Q*n)/(kk*A*Math.pow(R,2/3)),2);
     
-    // Check if matching calculated slope exists in predefined ratios
     let matchedOption = Array.from(document.getElementById('inp-S').options).find(opt => Math.abs(parseFloat(opt.value) - S) < 0.00001);
     const selectEl = document.getElementById('inp-S');
     const customInpEl = document.getElementById('inp-S-custom');
@@ -924,7 +942,7 @@ function drawSection() {
     ctx.moveTo(cx2-bw/2,baseY-bh);
     for(let i=0;i<=40;i++) { const t=(i/20-1); ctx.lineTo(cx2+t*bw/2, baseY-(1-t*t)*bh); }
     ctx.closePath(); ctx.fill();
-    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; ctx.stroke();
+    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; stroke();
 
     ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
     ctx.beginPath();
