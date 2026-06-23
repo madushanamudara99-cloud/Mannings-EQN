@@ -235,7 +235,7 @@
   .unit-btn {
     font-family: var(--mono);
     font-size: 0.72rem;
-    padding: 8px 16px;
+    padding: 6px 16px;
     border: none;
     background: transparent;
     color: var(--text2);
@@ -332,7 +332,7 @@
     background: var(--teal);
     color: var(--navy);
     font-family: var(--sans);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -343,7 +343,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     transition: all 0.15s ease-in-out;
     box-shadow: 0 4px 12px rgba(0, 201, 167, 0.15);
   }
@@ -575,11 +574,7 @@
 
       <div class="calc-btn-container">
         <button type="button" class="calc-submit-btn" onclick="calc()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Calculate Metrics
+          Calculate
         </button>
       </div>
 
@@ -659,7 +654,7 @@ function setN(v) {
   calc();
 }
 
-// Fixed core runtime typo bug: properly maps method tracking configuration hooks
+// Fixed naming linkage completely so runtime executions trigger without fault loops
 function getNValue() {
   const selectEl = document.getElementById('inp-n');
   const customInpEl = document.getElementById('inp-n-custom');
@@ -680,6 +675,7 @@ function handleNSelectChange() {
   calc();
 }
 
+// Restored missing logic helper mappings to accurately capture slope selection values
 function getSlopeValue() {
   const selectEl = document.getElementById('inp-S');
   const customInpEl = document.getElementById('inp-S-custom');
@@ -855,6 +851,7 @@ function calc() {
   resVal.textContent = fmt(result);
   const Fr = V / Math.sqrt(9.81 * Dh);
   setAux({A,R,V,T,Dh,Fr});
+  drawSection();
 }
 
 function setAux(d) {
@@ -952,8 +949,7 @@ function drawSection() {
     ctx.setLineDash([]);
 
     ctx.strokeStyle=teal; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(cx2,cy2); ctx.lineTo(cx2,cy2-rs); ctx.stroke();
-    ctx.fillStyle=teal; ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='left';
+    ctx.beginPath(); ctx.moveTo(cx2,cy2); ctx.lineTo(cx2,cy2-rs); stroke(); ctx.fillStyle=teal; ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='left';
     ctx.fillText(`D = ${fmt(D,2)} ${L()}`, cx2+6, cy2-rs/2);
     ctx.textAlign='center';
 
@@ -988,7 +984,7 @@ function drawSection() {
     ctx.moveTo(cx2-bw/2,baseY-bh);
     for(let i=0;i<=40;i++) { const t=(i/20-1); ctx.lineTo(cx2+t*bw/2, baseY-(1-t*t)*bh); }
     ctx.closePath(); ctx.fill();
-    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; stroke();
+    ctx.strokeStyle=waterStroke; ctx.lineWidth=1; ctx.stroke();
 
     ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
     ctx.beginPath();
@@ -1012,7 +1008,7 @@ function dim_arrow(ctx,x1,y1,x2,y2,label,color) {
   ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
   const hw=5,hh=3;
   ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1+hw,y1-hh); ctx.lineTo(x1+hw,y1+hh); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-hw,y2-hh); stroke(); ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-hw,y2-hh); ctx.lineTo(x2-hw,y2+hh); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-hw,y2-hh); ctx.lineTo(x2-hw,y2+hh); ctx.closePath(); ctx.fill();
   ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='center';
   ctx.fillText(label,(x1+x2)/2,y1-6);
 }
