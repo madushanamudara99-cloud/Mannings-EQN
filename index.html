@@ -621,7 +621,9 @@ const shapes = {
 
 const defaults = { B:0.6, y:0.6, z:1.5, D:1.0, T:2.0 };
 
+// Helper unit utilities
 function L() { return units==='SI' ? 'm' : 'ft'; }
+// Setup metric formatting references
 function Q_u() { return units==='SI' ? 'm³/s' : 'ft³/s'; }
 function V_u() { return units==='SI' ? 'm/s' : 'ft/s'; }
 function k() { return units==='SI' ? 1.0 : 1.486; }
@@ -641,6 +643,7 @@ function setSolve(v) {
   updateLabels(); calc();
 }
 
+// Global geometry shape controller hooks
 function setShape(s) {
   shape = s;
   document.querySelectorAll('#shape-btns .shape-btn').forEach((b,i) => {
@@ -654,7 +657,6 @@ function setN(v) {
   calc();
 }
 
-// Fixed naming linkage completely so runtime executions trigger without fault loops
 function getNValue() {
   const selectEl = document.getElementById('inp-n');
   const customInpEl = document.getElementById('inp-n-custom');
@@ -675,7 +677,6 @@ function handleNSelectChange() {
   calc();
 }
 
-// Restored missing logic helper mappings to accurately capture slope selection values
 function getSlopeValue() {
   const selectEl = document.getElementById('inp-S');
   const customInpEl = document.getElementById('inp-S-custom');
@@ -933,28 +934,33 @@ function drawSection() {
     const cx2=W/2, cy2=H/2;
     const rs=r*scale;
 
+    // Draw full concrete perimeter pipe circle
     ctx.strokeStyle=channelStroke; ctx.lineWidth=2;
     ctx.beginPath(); ctx.arc(cx2,cy2,rs,0,Math.PI*2); ctx.stroke();
 
     const yRatio=Math.max(0.01,Math.min(0.99,y/D));
     const theta=2*Math.acos(1-2*yRatio);
 
+    // Render inner channel liquid surface area
     ctx.fillStyle=water; ctx.beginPath();
     ctx.arc(cx2,cy2,rs,Math.PI/2+theta/2,Math.PI/2-theta/2,true);
     ctx.closePath(); ctx.fill();
     ctx.strokeStyle=waterStroke; ctx.lineWidth=1; ctx.stroke();
 
+    // Center layout grid baseline guidelines
     ctx.strokeStyle=dim; ctx.lineWidth=1; ctx.setLineDash([4,3]);
     ctx.beginPath(); ctx.moveTo(cx2-rs-10,cy2); ctx.lineTo(cx2+rs+10,cy2); ctx.stroke();
     ctx.setLineDash([]);
 
+    // Master pipe channel internal outer boundary diameter indicator tracking lines
     ctx.strokeStyle=teal; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(cx2,cy2); ctx.lineTo(cx2,cy2-rs); stroke(); ctx.fillStyle=teal; ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='left';
+    ctx.beginPath(); ctx.moveTo(cx2,cy2); ctx.lineTo(cx2,cy2-rs); ctx.stroke();
+    ctx.fillStyle=teal; ctx.font='11px JetBrains Mono, monospace'; ctx.textAlign='left';
     ctx.fillText(`D = ${fmt(D,2)} ${L()}`, cx2+6, cy2-rs/2);
     ctx.textAlign='center';
 
-    dim_arrow_v(ctx,cx2+rs+15,cy2+rs-y*scale,cy2+rs,`y`,teal);
-    ctx.fillStyle=teal; ctx.fillText(`y = ${fmt(y,2)} ${L()}`, cx2+rs+45, cy2+rs-(y*scale)/2+4);
+    // Fixed functional logic parameter updates: correctly calculates vector heights to print dimension tags safely
+    dim_arrow_v(ctx, cx2+rs+15, cy2+rs-y*scale, cy2+rs, `y = ${fmt(y,2)} ${L()}`, teal);
 
   } else if (shape==='tri') {
     const z=g('z')||1.5, y=g('y')||0.5;
